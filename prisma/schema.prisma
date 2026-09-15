@@ -4,10 +4,73 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  url      = env("DATABASE_URL")
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  passwordHash String?
+  image        String?       
+  phone        String?       
+  dateOfBirth  DateTime?     
+  settings     Json?
+  createdAt    DateTime      @default(now())
+
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+  goals        Goal[]
+}
+
+model Category {
+  id      String      @id @default(uuid())
+  name    String
+  type    String
+  userId  String?
+  user    User?       @relation(fields: [userId], references: [id])
+
+  budgets      Budget[]
+  transactions Transaction[]
+}
+
+model Budget {
+  id          String   @id @default(uuid())
+  userId      String
+  categoryId  String
+  limitAmount Decimal  @db.Decimal(15, 2)
+  periodMonth Int
+  periodYear  Int
+
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+}
+
+model Goal {
+  id            String   @id @default(uuid())
+  userId        String
+  name          String
+  targetAmount  Decimal  @db.Decimal(15, 2)
+  currentAmount Decimal? @db.Decimal(15, 2)
+  targetDate    DateTime @db.Date
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id         String   @id @default(uuid())
+  userId     String
+  categoryId String
+  amount     Decimal  @db.Decimal(15, 2)
+  date       DateTime @db.Date
+  description String
+
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
 }
