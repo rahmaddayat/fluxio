@@ -70,28 +70,33 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google") {
         if (!user.email) return false;
 
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
-
-        if (!existingUser) {
-          // Buat akun baru otomatis tanpa password
-          await prisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name || "Google User",
-              image: user.image,
-              passwordHash: null,
-            },
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
           });
-        } else {
-          // Jika akun sudah ada, perbarui foto jika kosong
-          if (!existingUser.image && user.image) {
-            await prisma.user.update({
-              where: { id: existingUser.id },
-              data: { image: user.image },
+
+          if (!existingUser) {
+            // Buat akun baru otomatis tanpa password
+            await prisma.user.create({
+              data: {
+                email: user.email,
+                name: user.name || "Google User",
+                image: user.image,
+                passwordHash: null,
+              },
             });
+          } else {
+            // Jika akun sudah ada, perbarui foto jika kosong
+            if (!existingUser.image && user.image) {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { image: user.image },
+              });
+            }
           }
+        } catch (error) {
+          console.error("[AUTH SIGNIN GOOGLE ERROR]", error);
+          return false;
         }
       }
       return true;
@@ -100,12 +105,16 @@ export const authOptions: NextAuthOptions = {
     // Saat JWT dibuat/diperbarui, simpan user ID yang konsisten dari DB
     async jwt({ token, user }) {
       if (user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.picture = dbUser.image;
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.picture = dbUser.image;
+          }
+        } catch (error) {
+          console.error("[AUTH JWT ERROR]", error);
         }
       }
       return token;
@@ -113,7 +122,7 @@ export const authOptions: NextAuthOptions = {
 
     // Saat session diakses di frontend, tambahkan id dari token ke session
     async session({ session, token }) {
-      if (session.user) {
+      if (session?.user) {
         session.user.id = token.id as string;
         if (token.picture) {
           session.user.image = token.picture as string;
@@ -127,4 +136,3 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login", // Redirect ke halaman login buatan sendiri
   },
 };
-
