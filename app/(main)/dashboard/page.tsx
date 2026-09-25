@@ -2,7 +2,7 @@
 
 import React from 'react';
 import FinCard from '@/components/FinCard';
-import { PlusIcon, Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import { PlusIcon, Wallet, TrendingUp, TrendingDown, Landmark } from 'lucide-react';
 import FixedButton from '@/components/FixedButton';
 
 export default function DashboardPage() {
@@ -62,7 +62,7 @@ export default function DashboardPage() {
                 <FinCard
                     title="Target Tabungan"
                     amount={15000000}
-                    icon={PiggyBank}
+                    icon={Landmark}
                     textColor="text-slate-900"
                     bgColor="bg-gradient-to-t from-indigo-900 via-indigo-500 to-indigo-400"
                     subtitle="Tercapai 65% dari target"
