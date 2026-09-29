@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useNotification } from '@/components/NotificationContext';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 type Tab = 'personal' | 'security' | 'preferences';
 
@@ -25,6 +26,11 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Modal konfirmasi states
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const [form, setForm] = useState({
     name: '',
@@ -110,11 +116,16 @@ export default function ProfilePage() {
     }
   }, [status]);
 
-  // Simpan perubahan data profil ke API backend
-  async function handleSave(e: React.FormEvent) {
+  // Trigger modal simpan perubahan profil
+  function handleSaveClick(e: React.FormEvent) {
     e.preventDefault();
     if (!isFormChanged) return;
+    setIsSaveModalOpen(true);
+  }
 
+  // Eksekusi simpan perubahan data profil ke API backend
+  async function executeSave() {
+    setIsSaveModalOpen(false);
     setIsSaving(true);
 
     try {
@@ -153,8 +164,8 @@ export default function ProfilePage() {
     }
   }
 
-  // Handle Ubah Password
-  async function handleChangePassword(e: React.FormEvent) {
+  // Trigger modal konfirmasi ubah password
+  function handlePasswordClick(e: React.FormEvent) {
     e.preventDefault();
 
     if (hasPassword && !passwords.currentPassword) {
@@ -172,6 +183,12 @@ export default function ProfilePage() {
       return;
     }
 
+    setIsPasswordModalOpen(true);
+  }
+
+  // Eksekusi ubah password ke API backend
+  async function executeChangePassword() {
+    setIsPasswordModalOpen(false);
     setIsChangingPassword(true);
 
     try {
@@ -205,8 +222,13 @@ export default function ProfilePage() {
     }
   }
 
-  // Handle Logout
-  const handleLogout = () => {
+  // Handle Logout Trigger & Execution
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const executeLogout = () => {
+    setIsLogoutModalOpen(false);
     signOut({ callbackUrl: '/login' });
   };
 
@@ -257,7 +279,7 @@ export default function ProfilePage() {
           </p>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           className="flex items-center gap-2 px-3.5 sm:px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer shrink-0"
         >
           <LogOut className="w-4 h-4" />
@@ -342,7 +364,7 @@ export default function ProfilePage() {
 
             {/* ── Personal Info Tab ── */}
             {activeTab === 'personal' && (
-              <form onSubmit={handleSave} className="space-y-5 sm:space-y-6">
+              <form onSubmit={handleSaveClick} className="space-y-5 sm:space-y-6">
                 <div>
                   <h2 className="text-lg sm:text-2xl font-bold text-slate-900">Personal Information</h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1">Update your personal details</p>
@@ -418,7 +440,7 @@ export default function ProfilePage() {
 
             {/* ── Security Tab ── */}
             {activeTab === 'security' && (
-              <form onSubmit={handleChangePassword} className="space-y-5 sm:space-y-6">
+              <form onSubmit={handlePasswordClick} className="space-y-5 sm:space-y-6">
                 <div>
                   <h2 className="text-lg sm:text-2xl font-bold text-slate-900">Security</h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -569,6 +591,63 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Modal Konfirmasi: Simpan Profil ── */}
+      <ConfirmationModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onConfirm={executeSave}
+        title="Simpan Perubahan Profil?"
+        subtitle="Apakah Anda yakin ingin memperbarui informasi data profil Anda?"
+        icon={
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm border border-primary/20">
+            <User className="w-6 h-6" />
+          </div>
+        }
+        confirmText="Ya, Simpan"
+        cancelText="Batal"
+        confirmVariant="primary"
+        isLoading={isSaving}
+      />
+
+      {/* ── Modal Konfirmasi: Ubah Password ── */}
+      <ConfirmationModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onConfirm={executeChangePassword}
+        title={hasPassword ? 'Ubah Password Akun?' : 'Buat Password Akun?'}
+        subtitle={
+          hasPassword
+            ? 'Apakah Anda yakin ingin mengganti password akun Anda saat ini?'
+            : 'Apakah Anda yakin ingin membuat password baru untuk akun ini?'
+        }
+        icon={
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm border border-primary/20">
+            <Lock className="w-6 h-6" />
+          </div>
+        }
+        confirmText={hasPassword ? 'Ya, Ubah' : 'Ya, Buat'}
+        cancelText="Batal"
+        confirmVariant="primary"
+        isLoading={isChangingPassword}
+      />
+
+      {/* ── Modal Konfirmasi: Sign Out ── */}
+      <ConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={executeLogout}
+        title="Sign Out dari Akun?"
+        subtitle="Apakah Anda yakin ingin keluar dari akun FLUXIO Anda saat ini?"
+        icon={
+          <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm border border-rose-100">
+            <LogOut className="w-6 h-6" />
+          </div>
+        }
+        confirmText="Ya, Sign Out"
+        cancelText="Batal"
+        confirmVariant="danger"
+      />
     </div>
   );
 }
