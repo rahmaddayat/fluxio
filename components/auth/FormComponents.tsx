@@ -41,8 +41,8 @@ export function InputWithIcon({
 
 export function EyeToggle({ show, onToggle }: { show: boolean; onToggle: () => void }) {
   return (
-    <button type="button" onClick={onToggle} className="text-gray-400 hover:text-gray-600">
-      {show ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+    <button type="button" onClick={onToggle} className="text-gray-400 hover:text-gray-600 mt-2">
+      {show ? <FiEye size={16} /> : <FiEyeOff size={16} />}
     </button>
   );
 }

@@ -41,7 +41,7 @@ export default function Sidebar() {
   // Automatically close mobile sidebar on screen resize to desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 640) {
         setIsMobileOpen(false);
       }
     };
@@ -51,8 +51,8 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile Top Header (Visible on screens < 768px) */}
-      <header className="md:hidden flex items-center justify-between bg-[#0b0736] text-white px-4 py-3.5 sticky top-0 z-30 border-b border-white/10 shadow-md w-full">
+      {/* Mobile Top Header (Visible on screens < 640px) */}
+      <header className="sm:hidden flex items-center justify-between bg-[#0b0736] text-white px-4 py-3.5 sticky top-0 z-30 border-b border-white/10 shadow-md w-full">
         <span className="text-xl font-bold tracking-[0.2em] text-white">FLUXIO</span>
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
@@ -66,7 +66,7 @@ export default function Sidebar() {
       {/* Mobile Backdrop Overlay */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 sm:hidden transition-opacity duration-300"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -75,24 +75,24 @@ export default function Sidebar() {
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 bg-[#0b0736] text-white flex flex-col transition-all duration-300 ease-in-out ${
           /* Desktop width & transition */
-          isCollapsed ? 'md:w-20' : 'md:w-64'
-        } ${
+          isCollapsed ? 'sm:w-20' : 'sm:w-64'
+          } ${
           /* Mobile width & slide drawer transition */
           isMobileOpen
             ? 'translate-x-0 w-[260px] max-w-[80vw] shadow-2xl'
-            : '-translate-x-full md:translate-x-0'
-        }`}
+            : '-translate-x-full sm:translate-x-0'
+          }`}
       >
         {/* Brand Header */}
         <div className="pt-6 pb-4 px-4 relative flex items-center justify-between border-b border-white/15">
           {/* Logo Brand / Compact Icon */}
           <div className="flex items-center justify-center w-full">
             {isCollapsed ? (
-              <span className="hidden md:block text-2xl font-black tracking-wider text-white">
+              <span className="hidden sm:block text-2xl font-black tracking-wider text-white">
                 F
               </span>
             ) : (
-              <span className="text-xl md:text-2xl font-bold tracking-[0.2em] text-white font-sans truncate">
+              <span className="text-xl sm:text-2xl font-bold tracking-[0.2em] text-white font-sans truncate">
                 FLUXIO
               </span>
             )}
@@ -101,7 +101,7 @@ export default function Sidebar() {
           {/* Desktop Collapse / Expand Toggle Button */}
           <button
             onClick={toggleCollapse}
-            className="hidden md:flex items-center justify-center p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer shrink-0"
+            className="hidden sm:flex items-center justify-center p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/15 transition-colors cursor-pointer shrink-0"
             title={isCollapsed ? 'Perluas Sidebar' : 'Kecilkan Sidebar'}
             aria-label="Toggle sidebar collapse"
           >
@@ -115,7 +115,7 @@ export default function Sidebar() {
           {/* Mobile Close Button */}
           <button
             onClick={() => setIsMobileOpen(false)}
-            className="md:hidden p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="sm:hidden p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -136,25 +136,21 @@ export default function Sidebar() {
                 href={item.href}
                 title={item.name}
                 onClick={() => setIsMobileOpen(false)}
-                className={`flex items-center rounded-xl transition-all duration-200 group ${
-                  isCollapsed
-                    ? 'md:justify-center md:px-0 md:py-3.5 px-4 py-3 gap-4'
-                    : 'px-4 py-3 gap-4 justify-start'
-                } ${
-                  isActive
+                className={`flex items-center rounded-xl transition-all duration-200 group ${isCollapsed
+                  ? 'sm:justify-center sm:px-0 sm:py-3.5 px-4 py-3 gap-4'
+                  : 'px-4 py-3 gap-4 justify-start'
+                  } ${isActive
                     ? 'bg-white/20 text-white font-semibold shadow-xs'
                     : 'text-white/90 hover:bg-white/10 hover:text-white'
-                }`}
+                  }`}
               >
                 <Icon
-                  className={`w-6 h-6 shrink-0 transition-transform duration-200 group-hover:scale-110 ${
-                    isActive ? 'text-white' : 'text-white/90'
-                  }`}
+                  className={`w-6 h-6 shrink-0 transition-transform duration-200 group-hover:scale-110 ${isActive ? 'text-white' : 'text-white/90'
+                    }`}
                 />
                 <span
-                  className={`truncate transition-all duration-200 ${
-                    isCollapsed ? 'md:hidden' : 'block'
-                  }`}
+                  className={`truncate transition-all duration-200 ${isCollapsed ? 'sm:hidden' : 'block'
+                    }`}
                 >
                   {item.name}
                 </span>

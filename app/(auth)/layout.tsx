@@ -55,7 +55,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </div>
 
             {/* Logo */}
-            <div className="relative z-10">
+            <div className="relative z-10"
+              style={{ opacity: isAnimating ? 0 : 1, transition: "opacity 150ms ease" }}
+            >
               <span className="text-2xl font-black tracking-widest uppercase text-slate-200">FLUXIO</span>
             </div>
 
@@ -74,7 +76,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </div>
 
             {/* Footer */}
-            <p className="relative z-10 text-[10px] text-slate-500 font-mono">© 2026 FLUXIO v1.0</p>
+            <p className="relative z-10 text-[10px] text-slate-500 font-mono"
+              style={{ opacity: isAnimating ? 0 : 1, transition: "opacity 150ms ease" }}
+            >© 2026 FLUXIO v1.0</p>
           </div>
 
           {/* ── Panel Kanan (halaman form sebagai children) ── */}
