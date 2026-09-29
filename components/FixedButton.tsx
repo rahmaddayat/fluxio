@@ -25,7 +25,7 @@ export default function FixedButton({
   title,
   icon: Icon,
   position = 'bottom-6 right-6',
-  bgColor = 'bg-[#0b0736]',
+  bgColor = 'bg-primary',
   textColor = 'text-white',
   onClick,
   className = '',

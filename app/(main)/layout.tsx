@@ -8,10 +8,10 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="flex flex-col sm:flex-row min-h-screen bg-white">
+    <div className="flex flex-col sm:flex-row min-h-screen bg-page text-page-foreground">
       <Sidebar />
       <main
-        className={`flex-1 bg-white min-h-screen p-4 sm:p-6 md:p-10 text-slate-900 w-full overflow-x-hidden transition-all duration-300 
+        className={`flex-1 bg-page min-h-screen p-4 sm:p-6 md:p-10 text-page-foreground w-full overflow-x-hidden transition-all duration-300 
           ${isCollapsed ? 'sm:ml-20' : 'sm:ml-64'
           }`}
       >

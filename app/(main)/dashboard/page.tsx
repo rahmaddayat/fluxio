@@ -7,7 +7,7 @@ import FixedButton from '@/components/FixedButton';
 
 export default function DashboardPage() {
     return (
-        <div className="bg-white min-h-full">
+        <div className="bg-page min-h-full">
             {/* Header */}
             <header className="mb-6 sm:mb-8">
                 <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Dashboard</h1>
