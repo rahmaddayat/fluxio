@@ -13,18 +13,17 @@ import {
   Bell,
   Globe,
   Loader2,
-  CheckCircle2,
-  AlertCircle,
 } from 'lucide-react';
+import { useNotification } from '@/components/NotificationContext';
 
 type Tab = 'personal' | 'security' | 'preferences';
 
 export default function ProfilePage() {
   const { data: session, status, update } = useSession();
+  const { notify } = useNotification();
   const [activeTab, setActiveTab] = useState<Tab>('personal');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -34,6 +33,12 @@ export default function ProfilePage() {
     dateOfBirth: '',
     image: '',
     createdAt: '',
+  });
+
+  const [initialForm, setInitialForm] = useState({
+    name: '',
+    phone: '',
+    dateOfBirth: '',
   });
 
   const [hasPassword, setHasPassword] = useState<boolean>(true);
@@ -54,6 +59,12 @@ export default function ProfilePage() {
     notifyGoal: false,
   });
 
+  // Cek apakah ada perubahan pada field Personal Info
+  const isFormChanged =
+    form.name !== initialForm.name ||
+    form.phone !== initialForm.phone ||
+    form.dateOfBirth !== initialForm.dateOfBirth;
+
   // Fetch data profil user dari API backend (/api/profile) yang mengambil dari database
   useEffect(() => {
     async function loadUserProfile() {
@@ -63,7 +74,7 @@ export default function ProfilePage() {
         if (res.ok) {
           const data = await res.json();
           if (data.user) {
-            setForm({
+            const loadedForm = {
               name: data.user.name || '',
               email: data.user.email || '',
               phone: data.user.phone || '',
@@ -72,6 +83,12 @@ export default function ProfilePage() {
                 : '',
               image: data.user.image || '',
               createdAt: data.user.createdAt || '',
+            };
+            setForm(loadedForm);
+            setInitialForm({
+              name: loadedForm.name,
+              phone: loadedForm.phone,
+              dateOfBirth: loadedForm.dateOfBirth,
             });
             setHasPassword(Boolean(data.user.hasPassword));
             if (data.user.settings) {
@@ -96,8 +113,9 @@ export default function ProfilePage() {
   // Simpan perubahan data profil ke API backend
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
+    if (!isFormChanged) return;
+
     setIsSaving(true);
-    setMessage(null);
 
     try {
       const res = await fetch('/api/profile', {
@@ -116,37 +134,41 @@ export default function ProfilePage() {
         throw new Error(data.message || 'Gagal memperbarui profil');
       }
 
-      setMessage({ type: 'success', text: 'Profil berhasil diperbarui!' });
+      setInitialForm({
+        name: form.name,
+        phone: form.phone,
+        dateOfBirth: form.dateOfBirth,
+      });
+
+      notify.success('Profil berhasil diperbarui!');
 
       // Refresh session context jika nama berubah
       if (update) {
         await update({ name: form.name });
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Terjadi kesalahan saat menyimpan.' });
+      notify.failure(err.message || 'Terjadi kesalahan saat menyimpan.');
     } finally {
       setIsSaving(false);
-      setTimeout(() => setMessage(null), 4000);
     }
   }
 
   // Handle Ubah Password
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
-    setMessage(null);
 
     if (hasPassword && !passwords.currentPassword) {
-      setMessage({ type: 'error', text: 'Password saat ini wajib diisi.' });
+      notify.warning('Password saat ini wajib diisi.');
       return;
     }
 
     if (!passwords.newPassword || passwords.newPassword.length < 8) {
-      setMessage({ type: 'error', text: 'Password baru minimal 8 karakter.' });
+      notify.warning('Password baru minimal 8 karakter.');
       return;
     }
 
     if (passwords.newPassword !== passwords.confirmPassword) {
-      setMessage({ type: 'error', text: 'Konfirmasi password tidak cocok.' });
+      notify.warning('Konfirmasi password tidak cocok.');
       return;
     }
 
@@ -169,7 +191,7 @@ export default function ProfilePage() {
         throw new Error(data.message || 'Gagal mengubah password');
       }
 
-      setMessage({ type: 'success', text: data.message || 'Password berhasil diperbarui!' });
+      notify.success(data.message || 'Password berhasil diperbarui!');
       setPasswords({
         currentPassword: '',
         newPassword: '',
@@ -177,10 +199,9 @@ export default function ProfilePage() {
       });
       setHasPassword(true);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Terjadi kesalahan saat mengubah password.' });
+      notify.failure(err.message || 'Terjadi kesalahan saat mengubah password.');
     } finally {
       setIsChangingPassword(false);
-      setTimeout(() => setMessage(null), 4000);
     }
   }
 
@@ -206,6 +227,11 @@ export default function ProfilePage() {
     { id: 'security', label: 'Security', icon: Lock },
     { id: 'preferences', label: 'Preferences', icon: Globe },
   ];
+
+  // ── Variabel Styling Container Kartu Profil ──
+  // Ubah variabel ini untuk mengganti warna background dan border container di halaman profile
+  const containerBgCls = 'bg-card'; // Bisa diubah ke 'bg-white', 'bg-slate-50', dll, atau atur via --card-bg di globals.css
+  const containerBorderCls = 'border-card-border';
 
   const inputCls =
     'w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder-slate-400 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
@@ -239,28 +265,11 @@ export default function ProfilePage() {
         </button>
       </header>
 
-      {/* ── Notification Banner ── */}
-      {message && (
-        <div
-          className={`mb-5 p-4 rounded-2xl flex items-center gap-3 text-sm font-medium transition-all ${message.type === 'success'
-            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-            : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}
-        >
-          {message.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-          ) : (
-            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-          )}
-          <span>{message.text}</span>
-        </div>
-      )}
-
       {/* ── Content Grid ── */}
       <div className="flex flex-col lg:grid lg:grid-cols-[260px_1fr] gap-4 sm:gap-5 lg:items-stretch">
 
         {/* ── Left: Avatar Card ── */}
-        <div className="bg-white w-full rounded-3xl shadow-sm border border-slate-200/80 p-5 sm:p-6 flex flex-col items-center gap-4 lg:justify-between">
+        <div className={`${containerBgCls} ${containerBorderCls} w-full rounded-3xl shadow-sm border p-5 sm:p-6 flex flex-col items-center gap-4 lg:justify-between`}>
 
           {/* Avatar + Name */}
           <div className="flex lg:flex-col items-center gap-4 lg:gap-4 w-full lg:w-auto">
@@ -306,7 +315,8 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Right: Tabs + Form ── */}
-        <div className="bg-white w-full rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+        <div className={`${containerBgCls} 
+        ${containerBorderCls} w-full rounded-3xl shadow-sm border overflow-hidden`}>
 
           {/* Tab Bar */}
           <div className="flex items-center gap-0.5 px-4 sm:px-6 pt-4 sm:pt-5 border-b border-slate-100 overflow-x-auto scrollbar-none">
@@ -397,8 +407,8 @@ export default function ProfilePage() {
 
                 <button
                   type="submit"
-                  disabled={isSaving}
-                  className="flex items-center gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={isSaving || !isFormChanged}
+                  className="flex items-center gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary disabled:active:scale-100 disabled:shadow-none"
                 >
                   {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   {isSaving ? 'Saving...' : 'Save Changes'}
@@ -544,9 +554,8 @@ export default function ProfilePage() {
                     setIsSaving(true);
                     setTimeout(() => {
                       setIsSaving(false);
-                      setMessage({ type: 'success', text: 'Preferensi berhasil disimpan!' });
-                      setTimeout(() => setMessage(null), 4000);
-                    }, 800);
+                      notify.success('Preferensi berhasil disimpan!');
+                    }, 600);
                   }}
                   disabled={isSaving}
                   className="flex items-center gap-2.5 px-5 sm:px-6 py-2.5 sm:py-3 bg-primary hover:bg-primary-hover text-white text-sm font-semibold rounded-2xl shadow-md hover:shadow-lg active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-60"

@@ -40,7 +40,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
           {/* ── Panel Kiri (Animasi) ── */}
           <div
-            className="flex-shrink-0 bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950
+            className="flex-shrink-0 bg-gradient-to-b from-gray-900 via-slate-900 to-[#0f0061]
                        flex flex-col justify-between p-10 relative overflow-hidden text-white
                        rounded-l-2xl z-10"
             style={{

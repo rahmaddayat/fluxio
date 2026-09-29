@@ -14,6 +14,11 @@
   --sidebar-hover: rgba(255, 255, 255, 0.1);
   --sidebar-border: rgba(255, 255, 255, 0.15);
 
+  /* Universal Container / Card Theme */
+  --card-bg: #ffffff;
+  --card-fg: #0f172a;
+  --card-border: rgba(226, 232, 240, 0.8);
+
   /* Universal Brand Primary */
   --primary: #0b0736;
   --primary-hover: #160a5c;
@@ -25,6 +30,10 @@
   --color-foreground: var(--foreground);
   --color-page: var(--page-bg);
   --color-page-foreground: var(--page-fg);
+
+  --color-card: var(--card-bg);
+  --color-card-foreground: var(--card-fg);
+  --color-card-border: var(--card-border);
 
   --color-sidebar: var(--sidebar-bg);
   --color-sidebar-foreground: var(--sidebar-fg);
