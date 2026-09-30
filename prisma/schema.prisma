@@ -58,7 +58,7 @@ model Goal {
   name          String
   targetAmount  Decimal  @db.Decimal(15, 2)
   currentAmount Decimal? @db.Decimal(15, 2)
-  targetDate    DateTime @db.Date
+  targetDate    DateTime? @db.Date
 
   user User @relation(fields: [userId], references: [id])
 }
