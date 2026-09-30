@@ -412,14 +412,6 @@ export default function TransactionPage() {
                                     ? 'Tidak ada transaksi yang cocok dengan filter atau kata kunci pencarian Anda.'
                                     : 'Mulai catat pemasukan dan pengeluaran Anda untuk melihat daftar transaksi di sini.'}
                             </p>
-                            {hasActiveFilters && (
-                                <button
-                                    onClick={handleResetFilters}
-                                    className="mt-3 px-3.5 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors cursor-pointer"
-                                >
-                                    Reset Filter
-                                </button>
-                            )}
                         </div>
                     ) : (
                         // Transaction Cards List

@@ -14,6 +14,14 @@ interface TransactionDetailModalProps {
     onDelete: (id: string) => Promise<void>;
 }
 
+// Format string angka dengan titik pemisah ribuan (contoh: "1000000" -> "1.000.000")
+function formatNumberWithDots(val: string | number): string {
+    if (!val && val !== 0) return '';
+    const cleanStr = String(val).replace(/\D/g, '');
+    if (!cleanStr) return '';
+    return new Intl.NumberFormat('id-ID').format(parseInt(cleanStr, 10));
+}
+
 export default function TransactionDetailModal({
     isOpen,
     onClose,
@@ -36,7 +44,7 @@ export default function TransactionDetailModal({
     useEffect(() => {
         if (transaction) {
             setDescription(transaction.description || '');
-            setAmount(transaction.amount ? String(transaction.amount) : '');
+            setAmount(transaction.amount !== undefined && transaction.amount !== null ? formatNumberWithDots(transaction.amount) : '');
             setCategoryId(transaction.categoryId || '');
             
             // Format tanggal YYYY-MM-DD untuk input date
@@ -68,16 +76,26 @@ export default function TransactionDetailModal({
         }
     };
 
+    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawDigits = e.target.value.replace(/\D/g, '');
+        if (!rawDigits) {
+            setAmount('');
+            return;
+        }
+        setAmount(formatNumberWithDots(rawDigits));
+    };
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!description.trim() || !amount || !categoryId || !date) return;
+        const rawNumeric = amount.replace(/\./g, '');
+        if (!description.trim() || !rawNumeric || !categoryId || !date) return;
 
         try {
             setIsSaving(true);
             await onUpdate({
                 id: transaction.id,
                 description: description.trim(),
-                amount: parseFloat(amount),
+                amount: parseFloat(rawNumeric),
                 categoryId,
                 date,
             });
@@ -191,13 +209,12 @@ export default function TransactionDetailModal({
                                         Rp
                                     </span>
                                     <input
-                                        type="number"
+                                        type="text"
+                                        inputMode="numeric"
                                         required
-                                        min="1"
-                                        step="any"
                                         value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        placeholder="100000"
+                                        onChange={handleAmountChange}
+                                        placeholder="100.000"
                                         className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-slate-800 font-semibold transition-all"
                                     />
                                 </div>
