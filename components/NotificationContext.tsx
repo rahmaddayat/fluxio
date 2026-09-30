@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 
 export type NotificationType = 'success' | 'failure' | 'warning' | 'info' | 'error';
@@ -81,14 +81,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       prev.map((item) => (item.id === id ? { ...item, isLeaving: true } : item))
     );
 
-    // Hapus dari state setelah animasi keluar selesai (300ms)
+    // Hapus dari state setelah animasi keluar selesai (350ms)
     setTimeout(() => {
       setNotifications((prev) => prev.filter((item) => item.id !== id));
-    }, 300);
+    }, 350);
   }, []);
 
   const showNotification = useCallback(
-    (type: NotificationType, message: string, duration = 5000) => {
+    (type: NotificationType, message: string, duration = 4000) => {
       const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
       setNotifications((prev) => [...prev, { id, type, message, isLeaving: false }]);
@@ -102,16 +102,25 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     [closeNotification]
   );
 
-  const notify = {
-    success: (message: string, duration?: number) => showNotification('success', message, duration),
-    failure: (message: string, duration?: number) => showNotification('failure', message, duration),
-    error: (message: string, duration?: number) => showNotification('failure', message, duration),
-    warning: (message: string, duration?: number) => showNotification('warning', message, duration),
-    info: (message: string, duration?: number) => showNotification('info', message, duration),
-  };
+  // Stabilkan referensi objek `notify` agar TIDAK memicu re-render / useEffect tak terbatas pada komponen pemanggil
+  const notify = useMemo(
+    () => ({
+      success: (message: string, duration?: number) => showNotification('success', message, duration),
+      failure: (message: string, duration?: number) => showNotification('failure', message, duration),
+      error: (message: string, duration?: number) => showNotification('error', message, duration),
+      warning: (message: string, duration?: number) => showNotification('warning', message, duration),
+      info: (message: string, duration?: number) => showNotification('info', message, duration),
+    }),
+    [showNotification]
+  );
+
+  const contextValue = useMemo(
+    () => ({ showNotification, notify, closeNotification }),
+    [showNotification, notify, closeNotification]
+  );
 
   return (
-    <NotificationContext.Provider value={{ showNotification, notify, closeNotification }}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
 
       {/* Container Notifikasi Posisi Fixed di Atas Tengah */}
@@ -126,19 +135,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           return (
             <div
               key={item.id}
-              className={`pointer-events-auto flex items-center justify-between gap-3 w-full px-4 py-3.5 rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-300 ease-out ${
+              style={{
+                animation: item.isLeaving
+                  ? 'slideUpFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                  : 'slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              }}
+              className={`pointer-events-auto flex items-center justify-between gap-3 w-full px-4 py-3.5 rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-300 ${
                 config.bg
-              } ${config.border} ${
-                item.isLeaving
-                  ? '-translate-y-8 opacity-0 scale-95'
-                  : 'translate-y-0 opacity-100 scale-100 animate-in fade-in slide-in-from-top-4'
-              }`}
+              } ${config.border}`}
               role="alert"
             >
               {/* Icon & Message */}
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <Icon className={`w-5 h-5 shrink-0 ${config.iconColor}`} />
-                <p className={`text-sm font-medium leading-snug break-words ${config.text}`}>
+                <p className={`text-sm font-semibold leading-snug break-words ${config.text}`}>
                   {item.message}
                 </p>
               </div>
@@ -156,6 +166,30 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           );
         })}
       </div>
+
+      {/* CSS Keyframes untuk Animasi Slide Down & Slide Up */}
+      <style jsx global>{`
+        @keyframes slideDownFade {
+          0% {
+            opacity: 0;
+            transform: translateY(-28px) scale(0.95);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes slideUpFade {
+          0% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-24px) scale(0.95);
+          }
+        }
+      `}</style>
     </NotificationContext.Provider>
   );
 }

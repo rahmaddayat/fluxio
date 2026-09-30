@@ -45,8 +45,7 @@ model Budget {
   userId      String
   categoryId  String
   limitAmount Decimal  @db.Decimal(15, 2)
-  periodMonth Int
-  periodYear  Int
+  period      String   @default("MONTHLY") // "DAILY" | "MONTHLY" | "YEARLY"
 
   user     User     @relation(fields: [userId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])

@@ -7,6 +7,7 @@ const DEFAULT_CATEGORIES = [
     { name: "Salary", type: "INCOME" },
     { name: "Investment", type: "INCOME" },
     { name: "Freelance", type: "INCOME" },
+    { name: "Housing", type: "EXPENSE" },
     { name: "Food", type: "EXPENSE" },
     { name: "Transportation", type: "EXPENSE" },
     { name: "Shopping", type: "EXPENSE" },
